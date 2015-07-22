@@ -7,3 +7,8 @@ D:\Programming\Projects\Visual Studio projects\PFSoft Test\PFSOFT_Test\PFSOFT_Te
 D:\Programming\Projects\Visual Studio projects\PFSoft Test\PFSOFT_Test\PFSOFT_Test\obj\Debug\PFSOFT_Test.csproj.GenerateResource.Cache
 D:\Programming\Projects\Visual Studio projects\PFSoft Test\PFSOFT_Test\PFSOFT_Test\obj\Debug\PFSOFT_Test.exe
 D:\Programming\Projects\Visual Studio projects\PFSoft Test\PFSOFT_Test\PFSOFT_Test\obj\Debug\PFSOFT_Test.pdb
+D:\Programming\Projects\Visual Studio projects\PFSoft Test\PFSOFT_Test\PFSOFT_Test\bin\Debug\PaintInterfaces.dll
+D:\Programming\Projects\Visual Studio projects\PFSoft Test\PFSOFT_Test\PFSOFT_Test\bin\Debug\PaintInterfaces.pdb
+C:\Users\Пользователь\Documents\GitHub\PFSOFT_Test\PFSOFT_Test\PFSOFT_Test\bin\Debug\PFSOFT_Test.exe.config
+C:\Users\Пользователь\Documents\GitHub\PFSOFT_Test\PFSOFT_Test\PFSOFT_Test\obj\Debug\PFSOFT_Test.exe
+C:\Users\Пользователь\Documents\GitHub\PFSOFT_Test\PFSOFT_Test\PFSOFT_Test\obj\Debug\PFSOFT_Test.pdb

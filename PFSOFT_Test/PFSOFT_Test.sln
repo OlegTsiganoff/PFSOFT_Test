@@ -5,6 +5,10 @@ VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PFSOFT_Test", "PFSOFT_Test\PFSOFT_Test.csproj", "{3EC20DD8-4656-47F9-A6A5-6F16F4352DC7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaintInterface", "PaintInterfaces\PaintInterface.csproj", "{69CC3322-EE13-42B1-A0DD-BCDD41A40042}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyTriangle", "MyTriangle\MyTriangle.csproj", "{9AF4AC44-5C35-4983-8180-0E97E4159595}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{3EC20DD8-4656-47F9-A6A5-6F16F4352DC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EC20DD8-4656-47F9-A6A5-6F16F4352DC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EC20DD8-4656-47F9-A6A5-6F16F4352DC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69CC3322-EE13-42B1-A0DD-BCDD41A40042}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69CC3322-EE13-42B1-A0DD-BCDD41A40042}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69CC3322-EE13-42B1-A0DD-BCDD41A40042}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69CC3322-EE13-42B1-A0DD-BCDD41A40042}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AF4AC44-5C35-4983-8180-0E97E4159595}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AF4AC44-5C35-4983-8180-0E97E4159595}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AF4AC44-5C35-4983-8180-0E97E4159595}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AF4AC44-5C35-4983-8180-0E97E4159595}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -7,16 +7,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using PaintInterface;
 
 namespace PFSOFT_Test
 {
     // пользовательский контрол для рисования
-    public partial class MyCanvas : UserControl
+    public partial class MyCanvas : UserControl, IAddShape
     {
         MainForm parent;        // ссылка на родительское окно
         ShapeList shapeList;    // список нарисованных фигур
-        Tool activeTool;        // активный инструмент
-        
+        List<IShape> redoList;  // список отмененных фигур
+        ITool activeTool;       // активный инструмент        
 
 
         internal ShapeList ShapeList
@@ -25,7 +26,13 @@ namespace PFSOFT_Test
             set { shapeList = value; }
         }
 
-        public Tool ActiveTool
+        public List<IShape> RedoList
+        {
+            get { return redoList; }
+            set { redoList = value; }
+        }
+
+        public ITool ActiveTool
         {
             get { return activeTool; }
             set { activeTool = value; }
@@ -44,20 +51,25 @@ namespace PFSOFT_Test
         void MyInit()
         {
             shapeList = new ShapeList();
+            redoList = new List<IShape>();
             this.Paint += MyCanvas_Paint;
             this.MouseDown += MyCanvas_MouseDown;
             this.MouseMove += MyCanvas_MouseMove;
-            this.MouseUp += MyCanvas_MouseUp;
             this.DoubleBuffered = true;        
+        }
+
+        public void AddShape(IShape shape)
+        {
+            ShapeList.Add(shape);
+            parent.EnableUndoButton(true);
         }
 
         void parent_SettingsChanged(int thickness, Color color, Color backColor)
         {
             if(activeTool != null)
             {
-                activeTool.Thickness = thickness;
-                activeTool.Color = color;
-                activeTool.BackColor = backColor;
+                activeTool.SetSettings(thickness, color, backColor);
+                this.Refresh();
             }
         }
 
@@ -85,11 +97,9 @@ namespace PFSOFT_Test
                 activeTool.OnMouseMove(this, e); // перебрасываем событие в соответствующий класс
         }
 
-        void MyCanvas_MouseUp(object sender, MouseEventArgs e)
-        {
-            if (activeTool != null)
-                activeTool.OnMouseUp(this, e); // перебрасываем событие в соответствующий класс
-        }       
+        
 
+
+       
     }
 }

@@ -1,0 +1,4 @@
+D:\Programming\Projects\Visual Studio projects\PFSoft Test\PFSOFT_Test\PaintInterfaces\bin\Debug\PaintInterfaces.dll
+D:\Programming\Projects\Visual Studio projects\PFSoft Test\PFSOFT_Test\PaintInterfaces\bin\Debug\PaintInterfaces.pdb
+D:\Programming\Projects\Visual Studio projects\PFSoft Test\PFSOFT_Test\PaintInterfaces\obj\Debug\PaintInterfaces.dll
+D:\Programming\Projects\Visual Studio projects\PFSoft Test\PFSOFT_Test\PaintInterfaces\obj\Debug\PaintInterfaces.pdb

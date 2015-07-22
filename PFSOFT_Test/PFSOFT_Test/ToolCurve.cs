@@ -1,24 +1,39 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
-
+using PFSOFT_Test.Properties;
+using PaintInterface;
 
 namespace PFSOFT_Test
 {
-    class ToolCurve : Tool
+    class ToolCurve : ITool
     {        
         Curve curve;
+        private string name = "Curve";
+
+        /// <summary>
+        /// Название инструмента
+        /// </summary>
+        public string Name { get { return name; } }
+        /// <summary>
+        /// Изображение на кнопку с инструментом
+        /// </summary>
+        public Image Image { get { return Resources.curve; } }
+
+        public DrawSettings DrawSettings { get;  set; }
 
         public ToolCurve(){ }
 
-        public override void OnMouseDown(MyCanvas canvas, MouseEventArgs e)
+        public void OnMouseDown(UserControl canvas, MouseEventArgs e)
         {            
             curve = new Curve();
-            SetSettings();
+            ApplySettings();
             curve.AddPoint(e.Location);
-            canvas.ShapeList.Add(curve);
+            var iShapeList = canvas as IAddShape;
+            if(iShapeList != null)
+                iShapeList.AddShape(curve);
         }
 
-        public override void OnMouseMove(MyCanvas canvas, MouseEventArgs e)
+        public void OnMouseMove(UserControl canvas, MouseEventArgs e)
         {
             if (curve == null || e.Button != MouseButtons.Left)
                 return;
@@ -27,19 +42,21 @@ namespace PFSOFT_Test
             canvas.Refresh();
         }
 
-        public override void OnMouseUp(MyCanvas canvas, MouseEventArgs e)
-        {
-            
-        }
-
-        void SetSettings()
+        /// <summary>
+        /// переносим сохраненные свойства фигуры из этого класса в объект фигуры
+        /// </summary>
+        void ApplySettings()
         {
             if(curve != null)
             {
-                curve.Thickness = Thickness;
-                curve.Color = Color;
+                curve.DrawSettings = this.DrawSettings;
             }
         }
 
+        public ITool SetSettings(int thickness, Color color, Color backColor)
+        {
+            this.DrawSettings = new DrawSettings(thickness, color, backColor);           
+            return this;
+        }
     }
 }

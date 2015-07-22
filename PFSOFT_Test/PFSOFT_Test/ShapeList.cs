@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
-
+using PaintInterface;
 
 namespace PFSOFT_Test
 {
@@ -13,7 +13,7 @@ namespace PFSOFT_Test
     class ShapeList 
     {
         Color canvasBackground = Color.White;
-        List<Shape> shapes;        
+        List<IShape> shapes;        
         
         public Color CanvasBackground
         {
@@ -21,21 +21,26 @@ namespace PFSOFT_Test
             set { canvasBackground = value; }
         }
 
-        public List<Shape> Shapes
+        public List<IShape> Shapes
         {
             get { return shapes; }
             set { shapes = value; }
         }
 
-        public ShapeList() { shapes = new List<Shape>(); }
+        public ShapeList() { shapes = new List<IShape>(); }
 
         public void Draw(Graphics g)
         {
-            foreach(Shape shape in shapes)
+            foreach (IShape shape in shapes)
             {
                 shape.Draw(g);
+                if(shape.IsSelected)
+                {
+                    shape.DrawSelection(g);
+                }
             }
         }
+
 
         public void Clear()
         {
@@ -43,14 +48,15 @@ namespace PFSOFT_Test
                 shapes.Clear();
         }
 
-        public void Add(Shape shape)
+        public void Add(IShape shape)
         {
             shapes.Add(shape);
         }
 
-        public void RemoveLast()
+        public void DeselectAll()
         {
-            shapes.RemoveAt(shapes.Count - 1);
+            foreach (var item in shapes)
+                item.IsSelected = false;
         }
 
         /// <summary>
@@ -62,16 +68,12 @@ namespace PFSOFT_Test
         public async Task InvertColors(IProgress<Int32> progress)
         {            
             int count = 0;
-            foreach(Shape shape in shapes)
+            foreach(IShape shape in shapes)
             {
-                shape.Color = Color.FromArgb(shape.Color.ToArgb() ^ 0xffffff);
-                
-                var rect = shape as Rect;
-                if(rect != null)
-                    rect.BackColor = Color.FromArgb(rect.BackColor.ToArgb() ^ 0xffffff);
-                var circle = shape as Circle;
-                if(circle != null)
-                    circle.BackColor = Color.FromArgb(circle.BackColor.ToArgb() ^ 0xffffff);
+                Color color = Color.FromArgb(shape.DrawSettings.Color.ToArgb() ^ 0xffffff);
+                Color backColor = Color.FromArgb(shape.DrawSettings.BackColor.ToArgb() ^ 0xffffff);
+
+                shape.DrawSettings = new DrawSettings(shape.DrawSettings.Thickness, color, backColor);
 
                 progress.Report(count++ * 100 / shapes.Count);
                 await Task.Delay(100);

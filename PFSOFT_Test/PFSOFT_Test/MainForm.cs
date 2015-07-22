@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using PaintInterface;
 
 namespace PFSOFT_Test
 {
@@ -23,7 +24,7 @@ namespace PFSOFT_Test
         Color color = Color.Black; // цвет линии
         Color backColor = Color.Transparent;    // цвет фона фигуры
         Color oldBackColor = Color.Transparent; // цвет выбранный последний раз в ColorDialog
-        Tool lastTool;      // последний инструмент, который использовался
+        ITool lastTool;      // последний инструмент, который использовался
         bool isAsyncRuning = false; // выполняется ли сейчас асинхронная операция (Инвертирование)
         
 
@@ -61,10 +62,36 @@ namespace PFSOFT_Test
             myCanvas.Top = this.ClientRectangle.Top + toolStripMain.Height + menuStripMain.Height + 10;
             myCanvas.Width = this.ClientRectangle.Width - 20;
             myCanvas.Height = this.ClientRectangle.Height - toolStripMain.Height - menuStripMain.Height - 20;
-            myCanvas.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top; 
+            myCanvas.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
+                        
+            FillMainToolStrip();
         }
 
-        // обработчик checkBox Transparent        
+        /// <summary>
+        ///  Заполняет кнопками панель инструментов
+        /// </summary>
+        void FillMainToolStrip()
+        {
+            // ищем сборки в корневой папке приложения
+            Program.toolService.FindToolLibrary(Environment.CurrentDirectory);
+            foreach(var tool in Program.toolService.avalibleTools)
+            {
+                ToolStripButton button = new ToolStripButton("", tool.Image, toolStripButton_Click);
+                button.Tag = tool.GetType();
+                button.CheckOnClick = true;
+                button.ToolTipText = tool.Name;
+
+                toolStripMain.Items.Add(button);
+                ToolStripSeparator separator = new ToolStripSeparator();
+                toolStripMain.Items.Add(separator);
+            }
+        }
+
+        /// <summary>
+        /// обработчик checkBox Transparent 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>        
         void checkBoxTransparent_CheckedChanged(object sender, EventArgs e)
         {
             if(checkBoxTransparent.Checked)
@@ -81,7 +108,11 @@ namespace PFSOFT_Test
             }
         }
 
-        // вызываем диалог выбора фона фигуры
+        /// <summary>
+        /// вызываем диалог выбора фона фигуры
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param> 
         void butBackColor_Click(object sender, EventArgs e)
         {
             ColorDialog dialog = new ColorDialog();
@@ -96,7 +127,11 @@ namespace PFSOFT_Test
             butBackColor.BackColor = backColor;
         }
 
-        // вызываем диалог выбора цвета линии
+        /// <summary>
+        /// вызываем диалог выбора цвета линии
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param> 
         void butColor_Click(object sender, EventArgs e)
         {
             ColorDialog dialog = new ColorDialog();
@@ -109,14 +144,22 @@ namespace PFSOFT_Test
             butColor.BackColor = color;
         }
 
-        // обработчик comboBox (выбор толщины линии)
+        /// <summary>
+        /// обработчик comboBox (выбор толщины линии)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param> 
         void comboBoxThickness_SelectedIndexChanged(object sender, EventArgs e)
         {
             Int32.TryParse(comboBoxThickness.SelectedItem.ToString(), out thickness);
             SettingsChanged(thickness, color, backColor); // обновляем настройки
         }
 
-        // обработчик Новый документ
+        /// <summary>
+        /// Обработчик меню New
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (isAsyncRuning)
@@ -124,13 +167,19 @@ namespace PFSOFT_Test
                 MessageBox.Show("Подождите окончания операции.");
                 return;
             }
+            EnableUndoButton(false);
+            EnableRedoButon(false);
+            myCanvas.RedoList.Clear();
             // очищаем список фигур
             myCanvas.ShapeList.Clear();
             myCanvas.Refresh();
         }
 
-        // открываем диалог открытия файла
-        // открываем файл и восстанавливаем объект ShapeList
+        /// <summary>
+        /// Обработчик меню Open
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if(isAsyncRuning)
@@ -145,6 +194,10 @@ namespace PFSOFT_Test
             fileDialog.Multiselect = false;
             if(fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
+                EnableUndoButton(false);
+                EnableRedoButon(false);
+                myCanvas.RedoList.Clear();
+
                 fileName = fileDialog.FileName;
                 try
                 {
@@ -162,8 +215,11 @@ namespace PFSOFT_Test
             }
         }
 
-        // открываем диалог сохранения файла
-        // сохраняем объект ShapeList в файл
+        /// <summary>
+        /// Обработчик меню Сохранить (Save)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string newFileName = "Untitled.spt";
@@ -190,81 +246,54 @@ namespace PFSOFT_Test
             }                       
         }
 
-        // делаем активным инструмент Кривая линия
-        private void toolStripCurve_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Обработчик меню Close
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (toolStripCurve.Checked == false)
-            {
-                toolStripCurve.Checked = true;
-                toolStripRectangle.Checked = false;
-                toolStripCircle.Checked = false;
-                toolStripLine.Checked = false;                
-                myCanvas.ActiveTool = new ToolCurve().SetSettings(thickness, color, backColor);
-            }
-            else
-            {
-                toolStripCurve.Checked = false;               
-                myCanvas.ActiveTool = null;
-            }
-            
+            this.Close();
         }
 
-        // делаем активным инструмент Прямая линия
-        private void toolStripLine_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Обработчик кнопок инструментов
+        /// </summary>
+        /// <param name="sender">кнопка, которую нажали</param>
+        /// <param name="e">параметры</param>
+        private void toolStripButton_Click(object sender, EventArgs e)
         {
-            if (toolStripLine.Checked == false)
+            ToolStripButton button = sender as ToolStripButton;
+            if(button != null)
             {
-                toolStripLine.Checked = true;
-                toolStripRectangle.Checked = false;
-                toolStripCircle.Checked = false;
-                toolStripCurve.Checked  = false;
-                myCanvas.ActiveTool = new ToolLine().SetSettings(thickness, color, backColor);;
-                
+                Type toolType = button.Tag as Type;
+                if(toolType != null)
+                {
+                    ITool tool = Activator.CreateInstance(toolType) as ITool;
+                    if (tool != null)                    
+                        myCanvas.ActiveTool = tool.SetSettings(thickness, color, backColor);
+                    myCanvas.ShapeList.DeselectAll();
+                    myCanvas.Refresh();
+                }
             }
-            else
-            {
-                toolStripLine.Checked = false;
-                myCanvas.ActiveTool = null;
-            }
-        }
 
-        // делаем активным инструмент Прямоугольник
-        private void toolStripRectangle_Click(object sender, EventArgs e)
-        {
-            if ( toolStripRectangle.Checked == false)
+            // снимаем выделение с остальных кнопок
+            foreach(var butt in toolStripMain.Items)
             {
-                toolStripRectangle.Checked = true;
-                toolStripCurve.Checked = false;
-                toolStripCircle.Checked = false;
-                toolStripLine.Checked = false;
-                myCanvas.ActiveTool = new ToolRect().SetSettings(thickness, color, backColor);;
-            }
-            else
-            {
-                toolStripCurve.Checked = false;
-                myCanvas.ActiveTool = null;
+                if(butt != sender)
+                {
+                    ToolStripButton b = butt as ToolStripButton;
+                    if (b != null)
+                        b.Checked = false;
+                }
             }
         }
 
-        // делаем активным инструмент Круг
-        private void toolStripCircle_Click(object sender, EventArgs e)
-        {
-            if (toolStripCircle.Checked == false)
-            {
-                toolStripCircle.Checked = true;
-                toolStripRectangle.Checked = false;
-                toolStripCurve.Checked = false;
-                toolStripLine.Checked = false;
-                myCanvas.ActiveTool = new ToolCircle().SetSettings(thickness, color, backColor);;
-            }
-            else
-            {
-                toolStripCurve.Checked = false;
-                myCanvas.ActiveTool = null;
-            }
-        }
-
-        // запускаем процесс инвертирования рисунка
+        /// <summary>
+        /// Обработчик кнопки Invert
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void butInvert_Click(object sender, EventArgs e)
         {
             isAsyncRuning = true;
@@ -283,26 +312,88 @@ namespace PFSOFT_Test
             isAsyncRuning = false;
         }
 
-        // функция обновления состояния прогресс бара
+        /// <summary>
+        /// функция обновления состояния прогресс бара
+        /// </summary>
+        /// <param name="amount">состояние прогресса от 1 до 100</param> 
         void ReportProgress(int amount)
         {
             progressBar.Value = amount;
             myCanvas.Refresh();
         }
 
-        // активация и деактивация кнопок инструментов
-        void EnableToolButtons(bool enable)
+        
+        
+        /// <summary>
+        /// Обработчик кнопки Undo (Назад, отмена)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void buttonUndo_Click(object sender, EventArgs e)
         {
-            toolStripCurve.Enabled = enable;
-            toolStripLine.Enabled = enable;
-            toolStripRectangle.Enabled = enable;
-            toolStripCircle.Enabled = enable;
+            if (myCanvas.ShapeList.Shapes.Count > 0)
+            {
+                // запоминаем последнюю фигуру в списке
+                IShape shape = myCanvas.ShapeList.Shapes.ElementAt(myCanvas.ShapeList.Shapes.Count - 1);
+                myCanvas.ShapeList.Shapes.RemoveAt(myCanvas.ShapeList.Shapes.Count - 1); // удаляем из списка последнюю фигуру
+                myCanvas.RedoList.Add(shape);   // добавляем эту фигуру в список отмененных
+                EnableRedoButon(true);
+                myCanvas.Refresh(); // перерисовываем поляну
+            }
+            if (myCanvas.ShapeList.Shapes.Count == 0)
+                EnableUndoButton(false);
         }
 
-        // закрываем окно
-        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Обработчик кнопки Redo (вперед, вернуть отмененную операцию)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void buttonRedo_Click(object sender, EventArgs e)
         {
-            this.Close();
+            if (myCanvas.RedoList.Count > 0)
+            {
+                // запоминаем последнюю фигуру из списка отмененных
+                IShape shape = myCanvas.RedoList.ElementAt(myCanvas.RedoList.Count - 1); 
+                myCanvas.RedoList.RemoveAt(myCanvas.RedoList.Count - 1); // удаляем последнюю в списке отмененных
+                myCanvas.ShapeList.Add(shape); // добавляем фигуру в список отрисованных
+                EnableUndoButton(true);
+                myCanvas.Refresh(); // перерисовываем поляну
+            }
+            if (myCanvas.RedoList.Count == 0)
+                EnableRedoButon(false);
+        }
+
+        /// <summary>
+        /// активация и деактивация кнопок инструментов
+        /// </summary>
+        /// <param name="enable"></param> 
+        void EnableToolButtons(bool enable)
+        {
+            foreach (var item in toolStripMain.Items)
+            {
+                ToolStripButton button = item as ToolStripButton;
+                if (button != null)
+                    button.Enabled = enable;
+            }
+        }
+
+        /// <summary>
+        /// активация и деактивация кнопки Вперед
+        /// </summary>
+        /// <param name="enable"></param>
+        public void EnableRedoButon(bool enable)
+        {
+            buttonRedo.Enabled = enable;
+        }
+
+        /// <summary>
+        /// активация и деактивация кнопки Назад
+        /// </summary>
+        /// <param name="enable"></param>
+        public void EnableUndoButton(bool enable)
+        {
+            buttonUndo.Enabled = enable;
         }
        
     }

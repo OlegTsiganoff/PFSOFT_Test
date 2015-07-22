@@ -1,23 +1,38 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
+using PFSOFT_Test.Properties;
+using PaintInterface;
 
 namespace PFSOFT_Test
 {
-    class ToolRect : Tool
+    class ToolRect : ITool
     {
         Rect rect;
-        
+        private string name = "Rectangle";
 
-        public ToolRect() { }
+        /// <summary>
+        /// Название инструмента
+        /// </summary>
+        public string Name { get { return name; } }
+        /// <summary>
+        /// Изображение на кнопку с инструментом
+        /// </summary>
+        public Image Image { get { return Resources.rect; }  }
 
-        public override void OnMouseDown(MyCanvas canvas, MouseEventArgs e)
+        public DrawSettings DrawSettings { get; set; }
+
+        public ToolRect() {  }
+
+        public void OnMouseDown(UserControl canvas, MouseEventArgs e)
         {
-            rect = new Rect(e.Location, e.Location);
-            SetSettings();
-            canvas.ShapeList.Add(rect);
+            rect = new Rect(e.Location, new Point(e.X + 1, e.Y + 1));
+            ApplySettings();
+            var iShapeList = canvas as IAddShape;
+            if (iShapeList != null)
+                iShapeList.AddShape(rect);
         }
 
-        public override void OnMouseMove(MyCanvas canvas, MouseEventArgs e)
+        public void OnMouseMove(UserControl canvas, MouseEventArgs e)
         {
             if (rect == null || e.Button != MouseButtons.Left)
                 return;
@@ -26,20 +41,26 @@ namespace PFSOFT_Test
             canvas.Refresh();
         }
 
-        public override void OnMouseUp(MyCanvas canvas, MouseEventArgs e)
+        /// <summary>
+        /// переносим сохраненные свойства фигуры из этого класса в объект фигуры
+        /// </summary>
+        void ApplySettings()
         {
-
-        }
-
-        void SetSettings()
-        {
-            if(rect != null)
+            if (rect != null)
             {
-                rect.Thickness = Thickness;
-                rect.Color = Color;
-                rect.BackColor = BackColor;
+                rect.DrawSettings = this.DrawSettings;
             }
+        } 
+
+        public ITool SetSettings(int thickness, Color color, Color backColor)
+        {
+            this.DrawSettings = new DrawSettings(thickness, color, backColor);
+            return this;
         }
-       
+
+
+        
+
+        
     }
 }
